@@ -3,6 +3,7 @@ game 'gta5'
 
 author 'Niknock HD'
 description 'NKHD Cartridges'
+version '1.1.0'
 
 server_scripts {
     'server.lua',
