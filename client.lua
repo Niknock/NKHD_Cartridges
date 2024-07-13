@@ -1,13 +1,24 @@
 local cartridges = Config.MaxCartridges
 local NoCartgridgesMessage = false
-local cartridgesin = false
+local cartridgesin = true
+local SpamCooldownPressed = false
 
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
-        if cartridgesin == false then
-            if IsControlJustReleased(0, Config.ReloadKey) then
-                TriggerServerEvent('checkTaserCartridges')
+        if GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_STUNGUN') then
+            if cartridgesin == false then
+                if IsControlJustReleased(0, Config.ReloadKey) then
+                    if SpamCooldownPressed == false then
+                        if Config.Debug == true then
+                            print('Debug Pressed R')
+                        end
+                        SpamCooldownPressed = true
+                        TriggerServerEvent('checkTaserCartridges')
+                    else
+                        ShowNotification('Broo, Chill')
+                    end
+                end
             end
         end
     end
@@ -20,8 +31,19 @@ AddEventHandler('reloadTaser', function(hasCartridge)
         cartridges = Config.MaxCartridges
         ShowNotification('~g~Taser Reloaded')
         NoCartgridgesMessage = false
+        TriggerEvent('spam')
     else
         ShowNotification('~r~There are no Cartridges left.')
+        TriggerEvent('spam')
+    end
+end)
+
+RegisterNetEvent('spam')
+AddEventHandler('spam', function()
+    Citizen.Wait(Config.SpamCooldown)
+    SpamCooldownPressed = false
+    if Config.Debug == true then
+        print('Spam Protection Deactivated')
     end
 end)
 
@@ -42,13 +64,6 @@ Citizen.CreateThread(function()
                 end
             end
         end
-    end
-end)
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-
         if IsPedShooting(PlayerPedId()) and GetSelectedPedWeapon(PlayerPedId()) == GetHashKey('WEAPON_STUNGUN') then
             if cartridges > 0 then
                 cartridges = cartridges - 1
@@ -63,6 +78,7 @@ Citizen.CreateThread(function()
         end
     end
 end)
+
 
 function ShowNotification(text)
     SetNotificationTextEntry("STRING")
